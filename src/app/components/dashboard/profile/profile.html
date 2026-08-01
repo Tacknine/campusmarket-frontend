@@ -1,0 +1,63 @@
+<div class="profile-page">
+  <div class="toast" *ngIf="toast()">
+    <span>{{ toast() }}</span>
+  </div>
+
+  <div class="page-header">
+    <h1>My Profile</h1>
+    <p>Manage your account information</p>
+  </div>
+
+  <div class="profile-card">
+    <div class="profile-avatar-section">
+      <div class="avatar-large">
+        {{ user()?.username?.charAt(0)?.toUpperCase() }}
+      </div>
+      <div class="avatar-info">
+        <h2>{{ user()?.fullName || user()?.username }}</h2>
+        <span class="role-badge">{{ getRoleLabel() }}</span>
+      </div>
+    </div>
+
+    <div class="profile-form" *ngIf="!isEditing()">
+      <div class="info-row">
+        <label>Username</label>
+        <span>{{ user()?.username }}</span>
+      </div>
+      <div class="info-row">
+        <label>Email</label>
+        <span>{{ user()?.email }}</span>
+      </div>
+      <div class="info-row">
+        <label>Full Name</label>
+        <span>{{ user()?.fullName || 'Not set' }}</span>
+      </div>
+      <div class="info-row">
+        <label>Role</label>
+        <span>{{ getRoleLabel() }}</span>
+      </div>
+      <button class="btn btn-primary" (click)="toggleEdit()">Edit Profile</button>
+    </div>
+
+    <div class="profile-form" *ngIf="isEditing()">
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" [(ngModel)]="editForm.fullName" placeholder="Your full name" />
+      </div>
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" [(ngModel)]="editForm.username" placeholder="Username" />
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" [(ngModel)]="editForm.email" placeholder="Email address" />
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-outline" (click)="toggleEdit()">Cancel</button>
+        <button class="btn btn-primary" (click)="save()" [disabled]="saving()">
+          {{ saving() ? 'Saving...' : 'Save Changes' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

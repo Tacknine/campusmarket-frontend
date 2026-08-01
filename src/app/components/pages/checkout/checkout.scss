@@ -1,0 +1,665 @@
+$primary: #991b1b;
+$primary-hover: #7f1d1d;
+$secondary: #b91c1c;
+$accent: #f97316;
+$accent-hover: #ea580c;
+$bg-light: #f9fafb;
+$text-dark: #111827;
+$text-muted: #6b7280;
+$border: #e5e7eb;
+
+.checkout-page {
+  min-height: 100vh;
+  background: $bg-light;
+  padding: 2rem 0 4rem;
+}
+
+.section-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.page-title {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: $text-dark;
+  margin-bottom: 2rem;
+}
+
+.progress-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin-bottom: 2.5rem;
+
+  .step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+
+    .step-circle {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: $border;
+      color: $text-muted;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.9rem;
+      transition: all 0.3s;
+    }
+
+    .step-label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: $text-muted;
+    }
+
+    &.active .step-circle {
+      background: $primary;
+      color: #ffffff;
+    }
+
+    &.active .step-label { color: $text-dark; }
+
+    &.done .step-circle {
+      background: #10b981;
+      color: #ffffff;
+    }
+
+    .step-circle.check {
+      background: #10b981;
+      color: #ffffff;
+      svg { width: 18px; height: 18px; }
+    }
+  }
+
+  .step-line {
+    width: 80px;
+    height: 2px;
+    background: $border;
+    margin: 0 0.5rem;
+    margin-bottom: 1.4rem;
+    transition: background 0.3s;
+
+    &.done { background: #10b981; }
+  }
+}
+
+.checkout-layout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 2rem;
+  align-items: start;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.form-card {
+  background: #ffffff;
+  border-radius: 20px;
+  border: 1px solid $border;
+  padding: 2rem;
+
+  h2 {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: $text-dark;
+    margin-bottom: 0.35rem;
+  }
+
+  .form-desc {
+    color: $text-muted;
+    font-size: 0.92rem;
+    margin-bottom: 1.5rem;
+  }
+}
+
+.form-group {
+  margin-bottom: 1.25rem;
+
+  label {
+    display: block;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: $text-dark;
+    margin-bottom: 0.5rem;
+  }
+
+  input, textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1.5px solid $border;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    outline: none;
+    background: $bg-light;
+    color: $text-dark;
+    resize: vertical;
+
+    &:focus { border-color: $primary; box-shadow: 0 0 0 3px rgba(153, 27, 27, 0.1); }
+    &::placeholder { color: $text-muted; }
+  }
+}
+
+.form-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+
+  .btn { flex: 1; }
+}
+
+.review-section {
+  margin-bottom: 1.5rem;
+
+  h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: $text-dark;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid $border;
+  }
+}
+
+.review-field {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.92rem;
+
+  .review-label { font-weight: 600; color: $text-dark; }
+  span:last-child { color: $text-muted; }
+}
+
+.review-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  font-size: 0.92rem;
+
+  .review-item-name { color: $text-dark; flex: 1; }
+  .review-item-qty { color: $text-muted; margin: 0 1rem; }
+  .review-item-price { font-weight: 700; color: $text-dark; }
+}
+
+.error-msg {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.85rem 1rem;
+  background: rgba(239, 68, 68, 0.06);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 12px;
+  color: #ef4444;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+
+  svg { width: 20px; height: 20px; flex-shrink: 0; }
+}
+
+.order-summary-card {
+  background: #ffffff;
+  border-radius: 20px;
+  border: 1px solid $border;
+  padding: 1.5rem;
+  position: sticky;
+  top: 90px;
+
+  h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: $text-dark;
+    margin-bottom: 1rem;
+  }
+}
+
+.summary-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.summary-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.88rem;
+  padding: 0.35rem 0;
+
+  .summary-item-name { flex: 1; color: $text-dark; }
+  .summary-item-qty { color: $text-muted; margin: 0 0.75rem; }
+  .summary-item-price { font-weight: 600; color: $text-dark; }
+}
+
+.summary-divider {
+  height: 1px;
+  background: $border;
+  margin: 0.75rem 0;
+}
+
+.summary-total {
+  display: flex;
+  justify-content: space-between;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: $text-dark;
+}
+
+.payment-card {
+  h2 { margin-bottom: 0.25rem; }
+}
+
+.payment-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.payment-option {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-radius: 14px;
+  border: 1.5px solid $border;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover { border-color: $primary; background: rgba(153, 27, 27, 0.03); }
+
+  &.selected {
+    border-color: $primary;
+    background: rgba(153, 27, 27, 0.06);
+    box-shadow: 0 0 0 3px rgba(153, 27, 27, 0.08);
+  }
+
+  .payment-radio {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2px solid $border;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: border-color 0.2s;
+  }
+
+  &.selected .payment-radio { border-color: $primary; }
+
+  .radio-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: $primary;
+  }
+
+  .payment-info {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    flex: 1;
+
+    strong { display: block; font-size: 0.95rem; color: $text-dark; margin-bottom: 0.15rem; }
+    p { font-size: 0.82rem; color: $text-muted; margin: 0; }
+  }
+
+  .payment-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    svg { width: 22px; height: 22px; }
+
+    &.cash-icon { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+    &.mpesa-icon { background: rgba(22, 163, 74, 0.12); color: #16a34a; }
+  }
+
+  .powered-badge {
+    margin-left: auto;
+    padding: 0.25rem 0.65rem;
+    border-radius: 9999px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    background: rgba(22, 163, 74, 0.1);
+    color: #15803d;
+    white-space: nowrap;
+  }
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  border-radius: 14px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.25s;
+  text-decoration: none;
+
+  &.btn-primary {
+    background: $primary;
+    color: #ffffff;
+    &:hover { background: #7f1d1d; transform: translateY(-2px); }
+  }
+
+  &.btn-accent {
+    background: $accent;
+    color: #ffffff;
+    box-shadow: 0 4px 14px rgba(255, 111, 0, 0.35);
+    &:hover { background: $accent-hover; transform: translateY(-2px); }
+    &:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+  }
+
+  &.btn-outline {
+    background: transparent;
+    color: $primary;
+    border: 1.5px solid rgba(153, 27, 27, 0.25);
+    &:hover { background: rgba(153, 27, 27, 0.06); border-color: $primary; }
+  }
+}
+
+// ✅ ORDER SUMMARY PAYMENT (STEP 3)
+.order-summary-payment {
+  background: $bg-light;
+  border-radius: 14px;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid $border;
+
+  .summary-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: $text-dark;
+
+    .status-badge {
+      padding: 0.2rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      background: #fde8e8;
+      color: #991b1b;
+      text-transform: uppercase;
+    }
+  }
+
+  .summary-total-large {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1.5px solid $border;
+    margin-bottom: 0.5rem;
+
+    strong {
+      font-size: 1.3rem;
+      color: $primary;
+    }
+  }
+
+  .summary-items-preview {
+    .preview-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.2rem 0;
+      font-size: 0.85rem;
+      color: $text-muted;
+    }
+  }
+
+  .summary-divider {
+    border-top: 1px solid $border;
+    margin: 0.5rem 0;
+  }
+
+  .summary-details {
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.15rem 0;
+      font-size: 0.85rem;
+
+      span:first-child {
+        color: $text-muted;
+      }
+      span:last-child {
+        font-weight: 500;
+        color: $text-dark;
+      }
+    }
+  }
+}
+
+// ✅ M-PESA PHONE FIELD
+.mpesa-phone-field {
+  margin: 1rem 0;
+  padding: 1rem;
+  background: $bg-light;
+  border-radius: 14px;
+  border: 1px solid $border;
+
+  label {
+    display: block;
+    font-weight: 600;
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+    color: $text-dark;
+  }
+
+  .phone-input-row {
+    display: flex;
+    gap: 0.5rem;
+
+    .country-select {
+      flex-shrink: 0;
+
+      select {
+        height: 100%;
+        padding: 0.7rem 0.6rem;
+        border: 1.5px solid $border;
+        border-radius: 10px;
+        font-size: 0.95rem;
+        outline: none;
+        background: #ffffff;
+        color: $text-dark;
+        cursor: pointer;
+
+        &:focus {
+          border-color: $primary;
+          box-shadow: 0 0 0 3px rgba(153, 27, 27, 0.08);
+        }
+      }
+    }
+
+    input {
+      flex: 1;
+      min-width: 0;
+      padding: 0.7rem 1rem;
+      border: 1.5px solid $border;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      outline: none;
+      background: #ffffff;
+      color: $text-dark;
+
+      &:focus {
+        border-color: $primary;
+        box-shadow: 0 0 0 3px rgba(153, 27, 27, 0.08);
+      }
+    }
+  }
+
+  small {
+    display: block;
+    margin-top: 0.4rem;
+    font-size: 0.75rem;
+    color: $text-muted;
+  }
+}
+
+// ✅ M-Pesa Status / Info Message
+.mpesa-status {
+  margin: 1rem 0;
+  padding: 0.75rem 1rem;
+  background: rgba(22, 163, 74, 0.08);
+  border: 1px solid rgba(22, 163, 74, 0.25);
+  border-radius: 12px;
+
+  .status-info {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    font-size: 0.9rem;
+    color: $text-dark;
+
+    svg {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+      color: #16a34a;
+      margin-top: 0.1rem;
+    }
+
+    strong {
+      color: #15803d;
+    }
+  }
+}
+
+// ✅ Secure payment note
+.secure-payment-note {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding-top: 0.9rem;
+  border-top: 1px dashed $border;
+  font-size: 0.78rem;
+  color: $text-muted;
+
+  svg {
+    width: 16px;
+    height: 16px;
+    color: #16a34a;
+    flex-shrink: 0;
+  }
+}
+
+// ✅ Order loading state
+.order-loading {
+  text-align: center;
+  padding: 3rem 1rem;
+
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid $border;
+    border-top-color: $primary;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 1rem;
+  }
+
+  p {
+    color: $text-muted;
+    font-size: 0.92rem;
+  }
+}
+
+// ✅ Waiting for seller confirmation
+.waiting-card {
+  text-align: center;
+  padding: 2rem 1rem;
+
+  .waiting-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 1rem;
+    border-radius: 50%;
+    background: rgba(245, 158, 11, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    svg {
+      width: 32px;
+      height: 32px;
+      color: #d97706;
+    }
+  }
+
+  h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: $text-dark;
+    margin-bottom: 0.5rem;
+  }
+
+  .waiting-desc {
+    color: $text-muted;
+    font-size: 0.92rem;
+    max-width: 420px;
+    margin: 0 auto 1.25rem;
+
+    strong { color: $text-dark; }
+  }
+
+  .waiting-progress {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    padding: 0.85rem 1rem;
+    background: rgba(153, 27, 27, 0.06);
+    border: 1px solid rgba(153, 27, 27, 0.15);
+    border-radius: 12px;
+    font-size: 0.85rem;
+    color: $text-muted;
+    margin-bottom: 1.25rem;
+  }
+
+  .waiting-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+
+    .btn { flex: 1; max-width: 220px; }
+  }
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@keyframes slide-down {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

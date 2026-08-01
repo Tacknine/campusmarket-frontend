@@ -1,0 +1,145 @@
+<div class="admin-page">
+  <div class="toast" *ngIf="toast()">
+    <span>{{ toast() }}</span>
+  </div>
+
+  <div class="page-header">
+    <h1>Admin Dashboard</h1>
+    <p>Manage your platform</p>
+  </div>
+
+  <!-- Tab Navigation -->
+  <div class="tab-nav">
+    <button class="tab-btn" [class.active]="activeTab() === 'stats'" (click)="setTab('stats')">Platform Stats</button>
+    <button class="tab-btn" [class.active]="activeTab() === 'users'" (click)="setTab('users')">Manage Users</button>
+    <button class="tab-btn" [class.active]="activeTab() === 'categories'" (click)="setTab('categories')">Categories</button>
+  </div>
+
+  <div class="loading-state" *ngIf="loading()">
+    <div class="spinner"></div>
+    <p>Loading data...</p>
+  </div>
+
+  <!-- STATS TAB -->
+  <div class="tab-content" *ngIf="activeTab() === 'stats' && !loading()">
+    <div class="stats-grid">
+      <div class="stat-card blue">
+        <span class="stat-icon">👥</span>
+        <span class="stat-value">{{ users().length }}</span>
+        <span class="stat-label">Total Users</span>
+      </div>
+      <div class="stat-card green">
+        <span class="stat-icon">📦</span>
+        <span class="stat-value">{{ categories().length }}</span>
+        <span class="stat-label">Categories</span>
+      </div>
+      <div class="stat-card orange">
+        <span class="stat-icon">🛍️</span>
+        <span class="stat-value">{{ users().filter(u => u.roles?.includes('ROLE_SELLER')).length }}</span>
+        <span class="stat-label">Active Sellers</span>
+      </div>
+      <div class="stat-card purple">
+        <span class="stat-icon">🛡️</span>
+        <span class="stat-value">{{ users().filter(u => u.roles?.includes('ROLE_ADMIN')).length }}</span>
+        <span class="stat-label">Admins</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- USERS TAB -->
+  <div class="tab-content" *ngIf="activeTab() === 'users' && !loading()">
+    <div class="table-card" *ngIf="users().length > 0">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Full Name</th>
+            <th>Roles</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let user of users()">
+            <td class="id-col">#{{ user.id }}</td>
+            <td><strong>{{ user.username }}</strong></td>
+            <td>{{ user.email }}</td>
+            <td>{{ user.fullName || '-' }}</td>
+            <td>
+              <span class="role-tag" *ngFor="let role of user.roles">{{ role.replace('ROLE_', '') }}</span>
+            </td>
+            <td>
+              <button class="btn btn-sm btn-danger" (click)="deleteUser(user.id)">Delete</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="empty-state" *ngIf="users().length === 0">
+      <h3>No users found</h3>
+    </div>
+  </div>
+
+  <!-- CATEGORIES TAB -->
+  <div class="tab-content" *ngIf="activeTab() === 'categories' && !loading()">
+    <div class="section-actions">
+      <button class="btn btn-primary" (click)="openCategoryModal()">+ Add Category</button>
+    </div>
+
+    <div class="table-card" *ngIf="categories().length > 0">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let cat of categories()">
+            <td class="id-col">#{{ cat.id }}</td>
+            <td><strong>{{ cat.name }}</strong></td>
+            <td>{{ cat.description || '-' }}</td>
+            <td class="actions-cell">
+              <button class="btn btn-sm btn-outline" (click)="openCategoryModal(cat)">Edit</button>
+              <button class="btn btn-sm btn-danger" (click)="deleteCategory(cat.id)">Delete</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="empty-state" *ngIf="categories().length === 0">
+      <h3>No categories found</h3>
+      <p>Create your first category to organize products.</p>
+      <button class="btn btn-primary" (click)="openCategoryModal()">+ Add Category</button>
+    </div>
+  </div>
+
+  <!-- Category Modal -->
+  <div class="modal-backdrop" *ngIf="showCategoryModal()" (click)="closeCategoryModal()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>{{ editingCategory() ? 'Edit Category' : 'Add New Category' }}</h3>
+        <button class="modal-close" (click)="closeCategoryModal()">&times;</button>
+      </div>
+      <form (submit)="$event.preventDefault(); saveCategory()" class="modal-form">
+        <div class="form-group">
+          <label>Category Name</label>
+          <input type="text" [(ngModel)]="categoryForm.name" name="name" placeholder="e.g. Electronics" required />
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea [(ngModel)]="categoryForm.description" name="description" placeholder="Describe this category..." rows="3"></textarea>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-outline" (click)="closeCategoryModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="saving()">
+            {{ saving() ? 'Saving...' : (editingCategory() ? 'Update' : 'Create') }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,197 @@
+<div class="seller-page">
+  <div class="toast" *ngIf="toast()">
+    <span>{{ toast() }}</span>
+  </div>
+
+  <div class="page-header flex-between">
+    <div>
+      <h1>Seller Dashboard</h1>
+      <p>Manage your products and incoming orders</p>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tab-nav">
+    <button class="tab-btn" [class.active]="activeTab() === 'products'" (click)="setTab('products')">
+      My Products
+    </button>
+    <button class="tab-btn" [class.active]="activeTab() === 'orders'" (click)="setTab('orders')">
+      Incoming Orders
+      <span class="tab-badge" *ngIf="getPendingOrders() > 0">{{ getPendingOrders() }}</span>
+    </button>
+  </div>
+
+  <!-- PRODUCTS TAB -->
+  <div class="tab-content" *ngIf="activeTab() === 'products'">
+    <div class="section-header-row">
+      <div class="stats-row">
+        <div class="stat-card">
+          <span class="stat-value">{{ products().length }}</span>
+          <span class="stat-label">Total Products</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-value">{{ getTotalStock() }}</span>
+          <span class="stat-label">Total Stock</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-value">{{ formatPrice(getTotalValue()) }}</span>
+          <span class="stat-label">Inventory Value</span>
+        </div>
+      </div>
+      <button class="btn btn-primary" (click)="openAddModal()">+ Add Product</button>
+    </div>
+
+    <div class="loading-state" *ngIf="loading()">
+      <div class="spinner"></div>
+      <p>Loading products...</p>
+    </div>
+
+    <div class="error-state" *ngIf="error() && !loading()">
+      <p>{{ error() }}</p>
+      <button class="btn btn-outline" (click)="loadProducts()">Retry</button>
+    </div>
+
+    <div class="empty-state" *ngIf="!loading() && !error() && products().length === 0">
+      <div class="empty-icon">📦</div>
+      <h3>No products yet</h3>
+      <p>Add your first product to start selling on campus!</p>
+      <button class="btn btn-primary" (click)="openAddModal()">+ Add Product</button>
+    </div>
+
+    <div class="products-grid" *ngIf="!loading() && products().length > 0">
+      <div class="product-card" *ngFor="let product of products()">
+        <div class="product-info">
+          <h3>{{ product.name }}</h3>
+          <p class="product-desc">{{ product.description }}</p>
+          <div class="product-meta">
+            <span class="product-price">{{ formatPrice(product.price) }}</span>
+            <span class="stock-badge">{{ product.stockQuantity }} in stock</span>
+          </div>
+          <span class="category-tag" *ngIf="product.categoryName">{{ product.categoryName }}</span>
+        </div>
+        <div class="product-actions">
+          <button class="btn btn-sm btn-outline" (click)="openEditModal(product)">Edit</button>
+          <button class="btn btn-sm btn-danger" (click)="deleteProduct(product.id)">Delete</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add/Edit Modal -->
+    <div class="modal-backdrop" *ngIf="showModal()" (click)="closeModal()">
+      <div class="modal-card" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>{{ editingProduct() ? 'Edit Product' : 'Add New Product' }}</h3>
+          <button class="modal-close" (click)="closeModal()">&times;</button>
+        </div>
+        <form (submit)="$event.preventDefault(); saveProduct()" class="modal-form">
+          <div class="form-group">
+            <label>Product Name</label>
+            <input type="text" [(ngModel)]="productForm.name" name="name" placeholder="e.g. MacBook Air M2" required />
+          </div>
+          <div class="form-group">
+            <label>Description</label>
+            <textarea [(ngModel)]="productForm.description" name="description" placeholder="Describe your product..." rows="3"></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Price (TZS)</label>
+              <input type="number" [(ngModel)]="productForm.price" name="price" min="0" required />
+            </div>
+            <div class="form-group">
+              <label>Stock Quantity</label>
+              <input type="number" [(ngModel)]="productForm.stockQuantity" name="stockQuantity" min="1" required />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Category</label>
+            <select [(ngModel)]="productForm.categoryId" name="categoryId" required>
+              <option value="0" disabled>Select category</option>
+              <option *ngFor="let cat of categories()" [ngValue]="cat.id">{{ cat.name }}</option>
+            </select>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn btn-outline" (click)="closeModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary" [disabled]="saving()">
+              {{ saving() ? 'Saving...' : (editingProduct() ? 'Update' : 'Create') }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ORDERS TAB -->
+  <div class="tab-content" *ngIf="activeTab() === 'orders'">
+    <div class="orders-loading" *ngIf="ordersLoading()">
+      <div class="spinner"></div>
+      <p>Loading orders...</p>
+    </div>
+
+    <div class="orders-error" *ngIf="ordersError() && !ordersLoading()">
+      <p>{{ ordersError() }}</p>
+      <button class="btn btn-outline" (click)="loadOrders()">Retry</button>
+    </div>
+
+    <div class="orders-empty" *ngIf="!ordersLoading() && !ordersError() && orders().length === 0">
+      <div class="empty-icon">📋</div>
+      <h3>No orders yet</h3>
+      <p>When students order your products, they'll appear here.</p>
+    </div>
+
+    <div class="orders-list" *ngIf="!ordersLoading() && orders().length > 0">
+      <div class="order-card" *ngFor="let order of orders()">
+        <div class="order-main">
+          <div class="order-header">
+            <span class="order-id">#{{ order.id }}</span>
+            <span class="order-status" [class]="order.status?.toLowerCase() || 'pending'">
+              {{ order.status || 'PENDING' }}
+            </span>
+          </div>
+          <div class="order-details">
+            <div class="order-field">
+              <span class="field-label">Product</span>
+              <span class="field-value">{{ getOrderProducts(order) }}</span>
+            </div>
+            <div class="order-field" *ngIf="order.buyerName || order.username || order.buyer">
+              <span class="field-label">Buyer</span>
+              <span class="field-value">{{ getOrderBuyer(order) }}</span>
+            </div>
+            <div class="order-field">
+              <span class="field-label">Quantity</span>
+              <span class="field-value">{{ getOrderQuantity(order) }}</span>
+            </div>
+            <div class="order-field">
+              <span class="field-label">Total</span>
+              <span class="field-value price">{{ formatPrice(order.totalPrice || order.price) }}</span>
+            </div>
+            <div class="order-field" *ngIf="order.createdAt || order.date">
+              <span class="field-label">Date</span>
+              <span class="field-value">{{ order.createdAt || order.date }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="order-actions" *ngIf="isPendingOrder(order)">
+          <button class="btn btn-sm btn-success" (click)="acceptOrder(order)" [disabled]="processingOrderId() !== null">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            {{ processingOrderId() === order.id ? 'Accepting...' : 'Accept' }}
+          </button>
+          <button class="btn btn-sm btn-reject" (click)="rejectOrder(order)" [disabled]="processingOrderId() !== null">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+            {{ processingOrderId() === order.id ? 'Rejecting...' : 'Reject' }}
+          </button>
+        </div>
+        <div class="order-actions" *ngIf="order.status === 'ACCEPTED'">
+          <span class="accepted-label">Order Accepted</span>
+        </div>
+        <div class="order-actions" *ngIf="order.status === 'REJECTED'">
+          <span class="rejected-label">Order Rejected</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

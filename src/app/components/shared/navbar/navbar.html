@@ -1,0 +1,97 @@
+<header class="site-header">
+  <!-- Shop bar -->
+  <div class="smarsh-shop-bar">
+    <div class="smarsh-shop-bar__inner">
+      <a class="smarsh-shop-bar__brand--mobile" routerLink="/">
+        <span class="brand-name">Campus<span class="brand-highlight">Market</span></span>
+      </a>
+      <a class="smarsh-shop-bar__brand--desktop" routerLink="/">
+        <svg class="brand-logo-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+          <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+        </svg>
+        <span class="brand-name">Campus<span class="brand-highlight">Market</span></span>
+      </a>
+      <span class="smarsh-shop-bar__tag">Global Student Marketplace</span>
+
+      <nav class="smarsh-shop-bar__nav">
+        <a routerLink="/" routerLinkActive="is-active" [routerLinkActiveOptions]="{ exact: true }">Home</a>
+        <a routerLink="/products" routerLinkActive="is-active">Products</a>
+        <a routerLink="/register">Sell</a>
+        <span class="nav-dropdown-wrapper">
+          <a href="#" class="nav-dropdown-toggle" [class.is-active]="categoryDropdownOpen()" (click)="$event.preventDefault(); toggleCategoryDropdown()">Categories</a>
+          <div class="nav-dropdown-menu" *ngIf="categoryDropdownOpen()">
+            <a *ngFor="let cat of categories()" [routerLink]="['/products']" [queryParams]="{ category: cat.name }" class="dropdown-item" (click)="closeCategoryDropdown()">
+              <span class="cat-dot" [style.background]="cat.gradient"></span>
+              <span class="cat-title">{{ cat.name }}</span>
+            </a>
+          </div>
+        </span>
+      </nav>
+
+      <div class="smarsh-shop-bar__search">
+        <svg class="bi-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <input
+          type="text"
+          placeholder="Search products..."
+          [value]="searchQuery()"
+          (input)="onSearchInput($event)"
+          (keyup.enter)="searchProducts()"
+        />
+      </div>
+
+      <div class="smarsh-shop-bar__actions">
+        <button class="smarsh-shop-bar__btn cart-btn" (click)="toggleCart()" title="View Cart">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+          <span class="cart-badge" *ngIf="cartService.totalCount() > 0">{{ cartService.totalCount() }}</span>
+        </button>
+
+        <ng-container *ngIf="isLoggedIn(); else authButtons">
+          <div class="user-avatar">{{ userInitial() }}</div>
+          <a routerLink="/dashboard" class="smarsh-shop-bar__nav-link">Dashboard</a>
+          <button class="smarsh-shop-bar__btn btn-logout" (click)="logout()" title="Logout">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+          </button>
+        </ng-container>
+        <ng-template #authButtons>
+          <a routerLink="/login" class="smarsh-shop-bar__btn auth-link">Log In</a>
+          <a routerLink="/register" class="smarsh-shop-bar__btn auth-link primary">Register</a>
+        </ng-template>
+
+        <button class="smarsh-shop-bar__menu-toggle" (click)="toggleMobileMenu()" aria-label="Toggle Menu">
+          <svg *ngIf="!mobileMenuOpen()" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+          <svg *ngIf="mobileMenuOpen()" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="smarsh-shop-bar__mobile-menu" *ngIf="mobileMenuOpen()">
+      <div class="mm-search">
+        <input
+          type="text"
+          placeholder="Search items..."
+          [value]="searchQuery()"
+          (input)="onSearchInput($event)"
+          (keyup.enter)="searchProducts()"
+        />
+      </div>
+      <nav class="mm-nav">
+        <a routerLink="/" (click)="mobileMenuOpen.set(false)">Home</a>
+        <a routerLink="/products" (click)="mobileMenuOpen.set(false)">Products</a>
+        <a *ngFor="let cat of categories()"
+          [routerLink]="['/products']"
+          [queryParams]="{ category: cat.name }"
+          (click)="mobileMenuOpen.set(false)"
+        >{{ cat.name }}</a>
+      </nav>
+      <div class="mm-auth" *ngIf="!isLoggedIn()">
+        <a routerLink="/login" class="btn btn-outline full-w" (click)="mobileMenuOpen.set(false)">Log In</a>
+        <a routerLink="/register" class="btn btn-primary full-w" (click)="mobileMenuOpen.set(false)">Register</a>
+      </div>
+      <div class="mm-auth" *ngIf="isLoggedIn()">
+        <a routerLink="/dashboard" class="btn btn-outline full-w" (click)="mobileMenuOpen.set(false)">Dashboard</a>
+        <button class="btn btn-primary full-w" (click)="logout()">Logout</button>
+      </div>
+    </div>
+  </div>
+</header>

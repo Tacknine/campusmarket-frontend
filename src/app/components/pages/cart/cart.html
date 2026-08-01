@@ -1,0 +1,64 @@
+<app-navbar></app-navbar>
+<div class="cart-page">
+  <div class="section-container">
+    <h1 class="page-title">Shopping Cart <span class="count" *ngIf="cartService.totalCount() > 0">({{ cartService.totalCount() }} items)</span></h1>
+
+    <div class="empty-cart" *ngIf="cartService.items().length === 0">
+      <div class="empty-icon-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="9" cy="21" r="1"></circle>
+          <circle cx="20" cy="21" r="1"></circle>
+          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+        </svg>
+      </div>
+      <h2>Your cart is empty</h2>
+      <p>Start adding items to your cart to checkout.</p>
+      <a routerLink="/products" class="btn btn-primary">Browse Products</a>
+    </div>
+
+    <div class="cart-layout" *ngIf="cartService.items().length > 0">
+      <div class="cart-items">
+        <div class="cart-item" *ngFor="let item of cartService.items()">
+          <img [src]="item.product.image" [alt]="item.product.name" class="item-thumb" />
+          <div class="item-info">
+            <a [routerLink]="['/products', item.product.id]" class="item-name">{{ item.product.name }}</a>
+            <span class="item-seller">Seller: {{ item.product.seller.name }}</span>
+            <span class="item-price">{{ formatPrice(item.product.price) }}</span>
+          </div>
+          <div class="item-qty">
+            <button class="qty-btn" (click)="decrementQty(item.product.id)" [disabled]="item.quantity <= 1">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            </button>
+            <span class="qty-val">{{ item.quantity }}</span>
+            <button class="qty-btn" (click)="incrementQty(item.product.id)" [disabled]="item.quantity >= item.product.stockQuantity">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            </button>
+          </div>
+          <div class="item-total">{{ formatPrice(item.product.price * item.quantity) }}</div>
+          <button class="remove-btn" (click)="removeItem(item.product.id)">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="cart-summary">
+        <h3>Order Summary</h3>
+        <div class="summary-row">
+          <span>Subtotal ({{ cartService.totalCount() }} items)</span>
+          <span class="summary-price">{{ formatPrice(cartService.totalPrice()) }}</span>
+        </div>
+        <div class="summary-row">
+          <span>Delivery</span>
+          <span class="free-delivery">Free (Campus Pickup)</span>
+        </div>
+        <div class="summary-divider"></div>
+        <div class="summary-row total">
+          <span>Total</span>
+          <span>{{ formatPrice(cartService.totalPrice()) }}</span>
+        </div>
+        <button class="btn btn-accent full-w" (click)="proceedToCheckout()">Proceed to Checkout</button>
+        <a routerLink="/products" class="continue-link">Continue Shopping</a>
+      </div>
+    </div>
+  </div>
+</div>

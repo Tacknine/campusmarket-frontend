@@ -1,0 +1,79 @@
+<app-navbar></app-navbar>
+<div class="confirmation-page">
+  <div class="section-container">
+    <div class="loading-state" *ngIf="loading()">
+      <div class="spinner"></div>
+      <p>Loading order details...</p>
+    </div>
+
+    <div class="error-state" *ngIf="error() && !loading()">
+      <h2>Order Not Found</h2>
+      <p>{{ error() }}</p>
+      <a routerLink="/products" class="btn btn-primary">Browse Products</a>
+    </div>
+
+    <div class="confirmation-card" *ngIf="order() && !loading()">
+      <div class="success-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+          <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>
+      </div>
+      <h1>{{ getTitle() }}</h1>
+      <p class="success-desc">{{ getDescription() }}</p>
+
+      <div class="order-info-card">
+        <div class="info-row">
+          <span class="info-label">Order ID</span>
+          <span class="info-value">#{{ order()!.orderId }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Order Status</span>
+          <span class="status-badge">{{ order()!.status || 'CREATED' }}</span>
+        </div>
+        <div class="info-row" *ngIf="hasPayment()">
+          <span class="info-label">Payment Method</span>
+          <span class="info-value">{{ getPaymentMethod() }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Payment Status</span>
+          <span class="pay-badge" [class]="getPaymentBadgeClass()">{{ getPaymentStatus() }}</span>
+        </div>
+        <div class="info-row" *ngIf="getPayment()?.transactionId">
+          <span class="info-label">Transaction ID</span>
+          <span class="info-value">{{ getPayment()!.transactionId }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Total</span>
+          <span class="info-value price">{{ formatPrice(order()!.totalPrice) }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Delivery Address</span>
+          <span class="info-value">{{ order()!.deliveryAddress }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Contact Phone</span>
+          <span class="info-value">{{ order()!.contactPhone }}</span>
+        </div>
+      </div>
+
+      <div class="order-items" *ngIf="order() && order()!.items && order()!.items.length > 0">
+        <h3>Order Items</h3>
+        <div class="order-item" *ngFor="let item of order()!.items">
+          <span class="item-name">{{ item.productName }}</span>
+          <span class="item-qty">&times; {{ item.quantity }}</span>
+          <span class="item-price">{{ formatPrice(item.price * item.quantity) }}</span>
+        </div>
+      </div>
+
+      <div class="confirmation-actions">
+        <button class="btn btn-pay" *ngIf="canPay()" (click)="payNow()">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+          Pay Now
+        </button>
+        <a routerLink="/dashboard/orders" class="btn btn-primary">View My Orders</a>
+        <a routerLink="/products" class="btn btn-outline">Continue Shopping</a>
+      </div>
+    </div>
+  </div>
+</div>

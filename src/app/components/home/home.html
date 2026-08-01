@@ -1,0 +1,642 @@
+<div class="campus-market-app">
+  <!-- Toast Notification -->
+  <div class="toast-notification" *ngIf="toastMessage()" [class.show]="toastMessage()">
+    <div class="toast-content">
+      <svg class="icon-check" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+      </svg>
+      <span>{{ toastMessage() }}</span>
+    </div>
+  </div>
+
+  <!-- STOREFRONT HEADER -->
+  <header id="storefront-header">
+    <!-- SMARSH SHOP BAR -->
+    <div class="smarsh-shop-bar">
+      <div class="smarsh-shop-bar__inner">
+        <button class="smarsh-shop-bar__menu-toggle" aria-label="Menu" (click)="toggleMobileMenu()">
+          <svg *ngIf="!mobileMenuOpen()" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+          <svg *ngIf="mobileMenuOpen()" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+
+        <a href="#" class="smarsh-shop-bar__brand--mobile" (click)="$event.preventDefault(); scrollToSection('hero-section')">
+          <svg class="brand-logo-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+            <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+          </svg>
+        </a>
+
+        <a href="#" class="smarsh-shop-bar__brand--desktop" (click)="$event.preventDefault(); scrollToSection('hero-section')">
+          <svg class="brand-logo-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+            <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+          </svg>
+          <span class="brand-name">Campus<span class="brand-highlight">Market</span></span>
+        </a>
+
+        <nav class="smarsh-shop-bar__nav">
+          <a href="#hero-section" class="is-active" (click)="$event.preventDefault(); scrollToSection('hero-section')">Home</a>
+
+          <div class="nav-dropdown-wrapper">
+            <button class="nav-dropdown-toggle" (click)="toggleCategoryDropdown()">
+              Categories
+              <svg class="chevron-icon" [class.open]="categoryDropdownOpen()" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+            <div class="nav-dropdown-menu" *ngIf="categoryDropdownOpen()">
+              <a
+                href="#"
+                class="dropdown-item"
+                *ngFor="let cat of categories()"
+                (click)="$event.preventDefault(); filterByCategory(cat.name)"
+              >
+                <span class="cat-dot" [style.background]="cat.gradient"></span>
+                <span class="cat-title">{{ cat.name }}</span>
+              </a>
+            </div>
+          </div>
+
+          <a href="#products-section" (click)="$event.preventDefault(); scrollToSection('products-section')">Products</a>
+          <a href="#footer-section" (click)="$event.preventDefault(); scrollToSection('footer-section')">Contact</a>
+        </nav>
+
+        <div class="smarsh-shop-bar__search">
+          <svg class="bi-search" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input
+            type="text"
+            placeholder="Search textbooks, laptops, dorm desks..."
+            [value]="searchQuery()"
+            (input)="onSearchInput($event)"
+            (focus)="showSuggestions.set(searchQuery().length > 0)"
+          />
+          <button class="clear-btn" *ngIf="searchQuery()" (click)="searchQuery.set(''); showSuggestions.set(false)">&times;</button>
+
+          <div class="autocomplete-dropdown" *ngIf="showSuggestions() && suggestions().length > 0">
+            <div class="dropdown-header">Matching Items &amp; Sellers</div>
+            <div class="suggestion-item" *ngFor="let item of suggestions()" (click)="selectSuggestion(item.name)">
+              <img [src]="item.image" [alt]="item.name" class="suggestion-thumb" />
+              <div class="suggestion-info">
+                <span class="suggestion-title">{{ item.name }}</span>
+                <span class="suggestion-meta">{{ item.category }} &bull; {{ formatPrice(item.price, item.currency) }}</span>
+              </div>
+              <span class="suggestion-badge">{{ item.condition }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="smarsh-shop-bar__actions">
+          <button class="smarsh-shop-bar__btn cart-btn" title="View Cart" (click)="toggleCartDrawer()">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="9" cy="21" r="1"></circle>
+              <circle cx="20" cy="21" r="1"></circle>
+              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+            </svg>
+            <span class="cart-badge" *ngIf="cartTotalCount() > 0">{{ cartTotalCount() }}</span>
+          </button>
+
+          <button class="smarsh-shop-bar__btn auth-link" (click)="openAuthModal('login')">Log In</button>
+          <button class="smarsh-shop-bar__btn auth-link primary" (click)="openAuthModal('register')">Register</button>
+        </div>
+      </div>
+
+      <!-- Mobile Drawer Menu -->
+      <div class="smarsh-shop-bar__mobile-menu" *ngIf="mobileMenuOpen()">
+        <div class="mm-search">
+          <input
+            type="text"
+            placeholder="Search items..."
+            [value]="searchQuery()"
+            (input)="onSearchInput($event)"
+          />
+        </div>
+        <nav class="mm-nav">
+          <a href="#hero-section" (click)="scrollToSection('hero-section'); toggleMobileMenu()">Home</a>
+          <a href="#categories-section" (click)="scrollToSection('categories-section'); toggleMobileMenu()">Categories</a>
+          <a href="#products-section" (click)="scrollToSection('products-section'); toggleMobileMenu()">Products</a>
+          <a href="#" (click)="$event.preventDefault(); openAuthModal('register'); toggleMobileMenu()">Sell an Item</a>
+          <a href="#footer-section" (click)="scrollToSection('footer-section'); toggleMobileMenu()">Contact &amp; Support</a>
+        </nav>
+        <div class="mm-auth">
+          <button class="btn btn-outline full-w" (click)="openAuthModal('login'); toggleMobileMenu()">Log In</button>
+          <button class="btn btn-primary full-w" (click)="openAuthModal('register'); toggleMobileMenu()">Register Student Account</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- STOREFRONT MAIN -->
+  <main id="storefront-main">
+    <!-- HERO CAROUSEL -->
+    <section id="hero-section" class="hero-carousel">
+      <!-- Slide 1 -->
+      <div class="hero-slide">
+        <div class="hero-slide__bg" style="background-image: url('https://s.alicdn.com/@sc04/kf/Hd9c2a287bfb0426e82c8b050109a83efE.jpg_480x480.jpg');"></div>
+        <div class="hero-slide__overlay"></div>
+        <div class="hero-slide__inner">
+          <div class="hero-slide__content">
+            <span class="hero-slide__badge"><span class="pulse-dot"></span> Verified Student Marketplace</span>
+            <h1 class="hero-slide__title">Buy &amp; Sell <span class="smarsh-red-text">Within Your Campus</span></h1>
+            <p class="hero-slide__desc">Textbooks, laptops, dorm furniture and more — listed by verified university students. Safe meetups, zero fees, M-Pesa payments.</p>
+            <div class="hero-slide__cta">
+              <a class="btn btn-primary" href="#products-section" (click)="$event.preventDefault(); scrollToSection('products-section')">Browse Products</a>
+              <a class="btn btn-outline-hero" href="#" (click)="$event.preventDefault(); openAuthModal('register')">Sell Your Items</a>
+            </div>
+          </div>
+          <div class="hero-slide__img-wrap">
+            <img class="hero-slide__img" src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=900&q=80" alt="Students shopping on campus" />
+            <div class="hero-slide__float hero-slide__float--1">
+              <span class="float-value">15,000+</span>
+              <span class="float-label">Active Students</span>
+            </div>
+            <div class="hero-slide__float hero-slide__float--2">
+              <span class="float-value">100%</span>
+              <span class="float-label">Verified Sellers</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 2 -->
+      <div class="hero-slide">
+        <div class="hero-slide__bg" style="background-image: url('https://s.alicdn.com/@sc04/kf/Hd9c2a287bfb0426e82c8b050109a83efE.jpg_480x480.jpg');"></div>
+        <div class="hero-slide__overlay"></div>
+        <div class="hero-slide__inner">
+          <div class="hero-slide__content">
+            <span class="hero-slide__badge"><span class="pulse-dot"></span> Save Money On Campus</span>
+            <h1 class="hero-slide__title">Gently-Used Tech &amp; Gear <span class="smarsh-red-text">At Student Prices</span></h1>
+            <p class="hero-slide__desc">Find laptops, phones, lab coats and revision guides for a fraction of retail. Pay securely with M-Pesa after seller confirmation.</p>
+            <div class="hero-slide__cta">
+              <a class="btn btn-primary" href="#products-section" (click)="$event.preventDefault(); scrollToSection('products-section')">Shop Deals</a>
+              <a class="btn btn-outline-hero" href="#categories-section" (click)="$event.preventDefault(); scrollToSection('categories-section')">Explore Categories</a>
+            </div>
+          </div>
+          <div class="hero-slide__img-wrap">
+            <img class="hero-slide__img" src="https://onlineshop.smarsh.co.tz/storage/products/zLIdz2zh74LeLRpKMlNQRDRWiFWjIYVj6lUrTA2A.png" alt="Laptops and study gear" />
+            <div class="hero-slide__float hero-slide__float--1">
+              <span class="float-value">40%</span>
+              <span class="float-label">Average Savings</span>
+            </div>
+            <div class="hero-slide__float hero-slide__float--2">
+              <span class="float-value">0</span>
+              <span class="float-label">Selling Fees</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CATEGORIES SECTION -->
+    <section id="categories-section" class="categories-section">
+      <div class="section-container">
+        <div class="section-header center">
+          <span class="section-subtitle">Browse By Category</span>
+          <h2 class="section-title">Everything You Need For Campus Life</h2>
+          <p class="section-desc">From essential reference books to tech gear and dorm furniture, find what you need from fellow students.</p>
+        </div>
+
+        <div class="categories-loading" *ngIf="categoriesLoading()">
+          <div class="loading-spinner"></div>
+          <p>Loading categories...</p>
+        </div>
+
+        <div class="categories-error" *ngIf="categoriesError() && !categoriesLoading()">
+          <p>{{ categoriesError() }}</p>
+          <button class="btn btn-outline" (click)="loadCategories()">Retry</button>
+        </div>
+
+        <div class="categories-grid" *ngIf="!categoriesLoading() && !categoriesError()">
+          <div
+            class="category-card card-hover"
+            *ngFor="let cat of categories()"
+            (click)="filterByCategory(cat.name)"
+          >
+            <div class="cat-icon-wrapper" [style.background]="cat.gradient">
+              <svg *ngIf="cat.id === 'electronics'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                <line x1="8" y1="21" x2="16" y2="21"></line>
+                <line x1="12" y1="17" x2="12" y2="21"></line>
+              </svg>
+              <svg *ngIf="cat.id === 'books'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+              </svg>
+              <svg *ngIf="cat.id === 'furniture'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 9V6a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v3"></path>
+                <path d="M3 11v5a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2z"></path>
+                <line x1="5" y1="18" x2="5" y2="21"></line>
+                <line x1="19" y1="18" x2="19" y2="21"></line>
+              </svg>
+              <svg *ngIf="cat.id === 'clothing'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20.38 3.46L16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"></path>
+              </svg>
+              <svg *ngIf="cat.id === 'accessories'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <path d="M16 10a4 4 0 0 1-8 0"></path>
+              </svg>
+              <svg *ngIf="cat.id === 'services'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+              </svg>
+            </div>
+            <div class="cat-content">
+              <h3 class="cat-name">{{ cat.name }}</h3>
+              <p class="cat-desc">{{ cat.description }}</p>
+              <div class="cat-footer">
+                <span class="cat-count-badge">{{ cat.count }}+ Active Listings</span>
+                <span class="cat-arrow">&rarr;</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- HOT DEALS STRIP -->
+    <section class="hot-deals">
+      <div class="hot-deals__marquee">
+        <div class="hot-deals__track">
+          <span class="hot-deals__item">🔥 Hot Deals This Week</span>
+          <span class="hot-deals__item">📚 Textbooks from TZS 5,000</span>
+          <span class="hot-deals__item">💻 Refurbished Laptops up to 40% off</span>
+          <span class="hot-deals__item">🛏️ Dorm Furniture Clearance</span>
+          <span class="hot-deals__item">🚚 Free Campus Delivery</span>
+          <span class="hot-deals__item">💳 Pay Securely with M-Pesa</span>
+          <span class="hot-deals__item">🔥 Hot Deals This Week</span>
+          <span class="hot-deals__item">📚 Textbooks from TZS 5,000</span>
+          <span class="hot-deals__item">💻 Refurbished Laptops up to 40% off</span>
+          <span class="hot-deals__item">🛏️ Dorm Furniture Clearance</span>
+          <span class="hot-deals__item">🚚 Free Campus Delivery</span>
+          <span class="hot-deals__item">💳 Pay Securely with M-Pesa</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- FEATURED PRODUCTS SECTION -->
+    <section id="products-section" class="products-section">
+      <div class="section-container">
+        <div class="section-header flex-between">
+          <div>
+            <span class="section-subtitle">Student Listings</span>
+            <h2 class="section-title">Featured Campus Listings</h2>
+          </div>
+
+          <div class="carousel-nav-btns">
+            <button class="nav-arrow-btn" (click)="scrollProducts('left')" aria-label="Scroll left">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+              </svg>
+            </button>
+            <button class="nav-arrow-btn" (click)="scrollProducts('right')" aria-label="Scroll right">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="filter-pills-row">
+          <button
+            class="pill-btn"
+            [class.active]="activeCategoryFilter() === 'All'"
+            (click)="activeCategoryFilter.set('All')"
+          >
+            All Items
+          </button>
+          <button
+            class="pill-btn"
+            *ngFor="let cat of categories()"
+            [class.active]="activeCategoryFilter() === cat.name"
+            (click)="activeCategoryFilter.set(cat.name)"
+          >
+            {{ cat.name }}
+          </button>
+        </div>
+
+        <div id="featured-products-container" class="products-grid">
+          <div class="products-loading" *ngIf="productsLoading()">
+            <div class="loading-spinner"></div>
+            <p>Loading products...</p>
+          </div>
+
+          <div class="products-error" *ngIf="productsError() && !productsLoading()">
+            <p>{{ productsError() }}</p>
+            <button class="btn btn-outline" (click)="loadProducts()">Retry</button>
+          </div>
+
+          <div class="product-card card-hover" *ngFor="let product of displayedProducts()">
+            <div class="card-media">
+              <img [src]="product.image" [alt]="product.name" class="product-img" />
+              <div class="product-badge" *ngIf="product.badge">
+                <span class="badge-main">{{ product.badge }}</span>
+                <span class="badge-sub">Campus Deal</span>
+              </div>
+              <span class="condition-tag">{{ product.condition }}</span>
+            </div>
+
+            <div class="card-body">
+              <div class="card-meta-top">
+                <span class="product-category">{{ product.category }}</span>
+                <span class="product-location">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                    <circle cx="12" cy="10" r="3"></circle>
+                  </svg>
+                  {{ product.location }}
+                </span>
+              </div>
+
+              <h3 class="product-name" [title]="product.name">{{ product.name }}</h3>
+
+              <div class="price-row">
+                <span class="price-amount">{{ formatPrice(product.price, product.currency) }}</span>
+              </div>
+
+              <div class="seller-card-info">
+                <img [src]="product.seller.avatar" [alt]="product.seller.name" class="seller-avatar" />
+                <div class="seller-details">
+                  <div class="seller-name-row">
+                    <span class="seller-name">{{ product.seller.name }}</span>
+                    <svg class="verified-badge" *ngIf="product.seller.verified" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                    </svg>
+                  </div>
+                  <span class="seller-major">{{ product.seller.major }} &bull; {{ product.seller.university }}</span>
+                </div>
+              </div>
+
+              <div class="product-card-actions">
+                <a class="product-card-actions__btn product-card-actions__btn--buy" [routerLink]="['/products', product.id]">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="9" cy="21" r="1"></circle>
+                    <circle cx="20" cy="21" r="1"></circle>
+                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                  </svg>
+                  Buy Now
+                </a>
+                <button class="product-card-actions__btn product-card-actions__btn--cart" (click)="addToCart(product)">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 5v14M5 12h14"></path>
+                  </svg>
+                  Add to Cart
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="empty-products" *ngIf="displayedProducts().length === 0 && !productsLoading()">
+            <div class="empty-icon">🔍</div>
+            <h3>No items found in this category</h3>
+            <p>Try searching for a different item or clear your active category filters.</p>
+            <button class="btn btn-outline" (click)="activeCategoryFilter.set('All'); searchQuery.set('')">Reset Filters</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STORE CTA BANNER -->
+    <section class="store-cta">
+      <div class="store-cta__glow store-cta__glow--1"></div>
+      <div class="store-cta__glow store-cta__glow--2"></div>
+      <div class="store-cta__orbit"></div>
+      <div class="store-cta__float store-cta__float--1">
+        <img src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=300&q=80" alt="Student offer" />
+      </div>
+      <div class="store-cta__float store-cta__float--2">
+        <img src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=300&q=80" alt="Tech offer" />
+      </div>
+      <div class="store-cta__content">
+        <span class="store-cta__eyebrow">Become A Seller</span>
+        <h2 class="store-cta__title">Turn Your Used Items Into Cash</h2>
+        <p class="store-cta__desc">List your textbooks, gadgets and dorm furniture in minutes. Zero selling fees — keep 100% of your sale.</p>
+        <div class="store-cta__actions">
+          <a class="btn btn-cta-primary" href="#" (click)="$event.preventDefault(); openAuthModal('register')">Start Selling Free</a>
+          <a class="btn btn-cta-ghost" href="#products-section" (click)="$event.preventDefault(); scrollToSection('products-section')">Browse Products</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- TRUST BAR -->
+    <section class="trust-bar">
+      <div class="trust-bar__item">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+        </svg>
+        <div>
+          <strong>100% Student Verified</strong>
+          <span>Campus email authentication</span>
+        </div>
+      </div>
+      <div class="trust-bar__item">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="1" x2="12" y2="23"></line>
+          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+        </svg>
+        <div>
+          <strong>Zero Selling Fees</strong>
+          <span>Keep 100% of your sale money</span>
+        </div>
+      </div>
+      <div class="trust-bar__item">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+          <circle cx="12" cy="10" r="3"></circle>
+        </svg>
+        <div>
+          <strong>Campus Safe Hubs</strong>
+          <span>Convenient dorm &amp; library meetups</span>
+        </div>
+      </div>
+      <div class="trust-bar__item">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+          <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>
+        <div>
+          <strong>Secure M-Pesa</strong>
+          <span>Buyer-protected payments</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER SECTION -->
+  <footer id="footer-section" class="site-footer">
+    <div class="footer-top">
+      <div class="section-container footer-grid">
+        <div class="footer-col brand-col">
+          <div class="brand-logo footer-logo">
+            <div class="logo-badge">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+                <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+              </svg>
+            </div>
+            <div class="logo-text">
+              <span class="brand-name white">Campus<span class="highlight">Market</span></span>
+            </div>
+          </div>
+          <p class="footer-desc">
+            Campus Market is the global peer-to-peer student marketplace — buy and sell textbooks, electronics, dorm furniture and more, securely on any campus around the world.
+          </p>
+          <div class="social-links">
+            <a href="#" class="social-btn" aria-label="Instagram"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg></a>
+            <a href="#" class="social-btn" aria-label="X / Twitter"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg></a>
+            <a href="#" class="social-btn" aria-label="LinkedIn"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg></a>
+            <a href="#" class="social-btn" aria-label="WhatsApp Group"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg></a>
+          </div>
+        </div>
+
+        <div class="footer-col">
+          <h4 class="footer-title">Quick Links</h4>
+          <ul class="footer-links">
+            <li><a href="#hero-section" (click)="$event.preventDefault(); scrollToSection('hero-section')">Home</a></li>
+            <li><a href="#categories-section" (click)="$event.preventDefault(); scrollToSection('categories-section')">Categories</a></li>
+            <li><a href="#products-section" (click)="$event.preventDefault(); scrollToSection('products-section')">Featured Products</a></li>
+            <li><a href="#" (click)="$event.preventDefault(); openAuthModal('register')">Sell An Item</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4 class="footer-title">Safety &amp; Support</h4>
+          <ul class="footer-links">
+            <li><a href="#" (click)="$event.preventDefault(); showToast('Campus Safety Guidelines: Always meet at designated campus hubs during daylight hours.')">Campus Safety Guide</a></li>
+            <li><a href="#" (click)="$event.preventDefault(); showToast('Student Verification: Verify your profile with your official student email.')">Verification FAQs</a></li>
+            <li><a href="#" (click)="$event.preventDefault(); showToast('Terms of Service: Respect fellow students and maintain clear transaction terms.')">Terms &amp; Conditions</a></li>
+            <li><a href="#" (click)="$event.preventDefault(); showToast('Privacy Policy: Your student data is protected with end-to-end encryption.')">Privacy Policy</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4 class="footer-title">Contact &amp; Support</h4>
+          <div class="contact-info">
+            <div class="contact-item">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+              <span>M-Pesa by Safaricom &bull; Nairobi, Kenya</span>
+            </div>
+            <div class="contact-item">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+              <span>support&#64;campusmarket.app</span>
+            </div>
+            <div class="contact-item">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+              <span>+254 700 123 456</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <div class="section-container flex-between">
+        <p>&copy; 2026 Campus Market. Built for university students worldwide.</p>
+        <div class="footer-bottom-links">
+          <a href="#" (click)="$event.preventDefault()">Privacy</a>
+          <a href="#" (click)="$event.preventDefault()">Terms</a>
+          <a href="#" (click)="$event.preventDefault()">Security</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- AUTH MODAL (LOGIN / REGISTER) -->
+  <div class="modal-backdrop" *ngIf="authModalOpen()" (click)="closeAuthModal()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <button class="modal-close" (click)="closeAuthModal()">&times;</button>
+
+      <div class="modal-tabs">
+        <button
+          class="tab-btn"
+          [class.active]="authMode() === 'login'"
+          (click)="authMode.set('login')"
+        >
+          Log In
+        </button>
+        <button
+          class="tab-btn"
+          [class.active]="authMode() === 'register'"
+          (click)="authMode.set('register')"
+        >
+          Register Student Account
+        </button>
+      </div>
+
+      <form (submit)="$event.preventDefault(); submitAuthForm()" class="auth-form">
+        <div class="form-group" *ngIf="authMode() === 'register'">
+          <label>Full Name</label>
+          <input type="text" [(ngModel)]="authForm.fullName" name="fullName" placeholder="e.g. Kelvin Mwangi" required minlength="1" />
+        </div>
+
+        <div class="form-group" *ngIf="authMode() === 'register'">
+          <label>Username</label>
+          <input type="text" [(ngModel)]="authForm.username" name="username" placeholder="e.g. kelvin_mwangi" required minlength="3" maxlength="50" />
+        </div>
+
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" [(ngModel)]="authForm.email" name="email" placeholder="student.name&#64;university.ac.tz" required />
+        </div>
+
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" [(ngModel)]="authForm.password" name="password" placeholder="••••••••" required minlength="6" />
+        </div>
+
+        <button type="submit" class="btn btn-primary full-w btn-lg">
+          {{ authMode() === 'login' ? 'Log In to Campus Market' : 'Create Free Account' }}
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- CART DRAWER -->
+  <div class="cart-drawer-backdrop" *ngIf="cartDrawerOpen()" (click)="toggleCartDrawer()">
+    <div class="cart-drawer" (click)="$event.stopPropagation()">
+      <div class="drawer-header">
+        <h3>Your Shopping Cart ({{ cartTotalCount() }})</h3>
+        <button class="drawer-close" (click)="toggleCartDrawer()">&times;</button>
+      </div>
+
+      <div class="drawer-body">
+        <div class="cart-empty" *ngIf="cart().length === 0">
+          <div class="cart-empty-icon">🛒</div>
+          <p>Your cart is empty.</p>
+          <button class="btn btn-outline" (click)="toggleCartDrawer(); scrollToSection('products-section')">Browse Products</button>
+        </div>
+
+        <div class="cart-item" *ngFor="let item of cart()">
+          <img [src]="item.product.image" [alt]="item.product.name" class="cart-item-thumb" />
+          <div class="cart-item-info">
+            <h4 class="cart-item-title">{{ item.product.name }}</h4>
+            <span class="cart-item-price">{{ formatPrice(item.product.price, item.product.currency) }} &times; {{ item.quantity }}</span>
+            <span class="cart-seller-tag">Seller: {{ item.product.seller.name }}</span>
+          </div>
+          <button class="remove-cart-item" (click)="removeFromCart(item.product.id)">&times;</button>
+        </div>
+      </div>
+
+      <div class="drawer-footer" *ngIf="cart().length > 0">
+        <div class="cart-total-row">
+          <span>Subtotal:</span>
+          <span class="total-price-amount">{{ formatPrice(cartTotalPrice()) }}</span>
+        </div>
+        <button class="btn btn-accent full-w btn-lg" (click)="showToast('Order placed successfully! Connecting you with student sellers...'); toggleCartDrawer()">
+          Proceed to Campus Checkout
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

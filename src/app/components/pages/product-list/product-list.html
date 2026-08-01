@@ -1,0 +1,141 @@
+<app-navbar></app-navbar>
+<div class="product-list-page">
+  <div class="page-header-section">
+    <div class="section-container">
+      <div class="breadcrumb">
+        <a routerLink="/">Home</a>
+        <span class="sep">/</span>
+        <span>Products</span>
+      </div>
+      <h1 class="page-title">Browse Products</h1>
+      <p class="page-subtitle">Find textbooks, electronics, furniture and more from fellow students</p>
+    </div>
+  </div>
+
+  <div class="section-container main-layout">
+    <button class="mobile-filter-toggle" (click)="toggleMobileFilters()">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="4" y1="21" x2="4" y2="14"></line>
+        <line x1="4" y1="10" x2="4" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="12"></line>
+        <line x1="12" y1="8" x2="12" y2="3"></line>
+        <line x1="20" y1="21" x2="20" y2="16"></line>
+        <line x1="20" y1="12" x2="20" y2="3"></line>
+      </svg>
+      Filters
+    </button>
+
+    <aside class="filter-sidebar" [class.mobile-open]="mobileFiltersOpen()">
+      <div class="filter-header">
+        <h3>Filters</h3>
+        <button class="clear-filters" (click)="clearFilters()">Clear All</button>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">Search</label>
+        <div class="filter-search">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" placeholder="Search items..." [value]="searchQuery()" (input)="searchQuery.set($any($event.target).value)" />
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">Category</label>
+        <div class="category-pills">
+          <button class="cat-pill" [class.active]="selectedCategory() === 'All'" (click)="selectCategory('All')">All</button>
+          <button class="cat-pill" *ngFor="let cat of categories()" [class.active]="selectedCategory() === cat.name" (click)="selectCategory(cat.name)">{{ cat.name }}</button>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">Price Range</label>
+        <div class="price-inputs">
+          <input type="number" placeholder="Min" [value]="priceMin()" (input)="priceMin.set($any($event.target).value ? +$any($event.target).value : null)" />
+          <span class="price-sep">-</span>
+          <input type="number" placeholder="Max" [value]="priceMax()" (input)="priceMax.set($any($event.target).value ? +$any($event.target).value : null)" />
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">Sort By</label>
+        <select [value]="sortBy()" (change)="sortBy.set($any($event.target).value)">
+          <option *ngFor="let opt of sortOptions" [value]="opt.value">{{ opt.label }}</option>
+        </select>
+      </div>
+    </aside>
+
+    <main class="products-main">
+      <div class="results-bar">
+        <span class="result-count">{{ resultCount() }} products found</span>
+        <div class="active-filters" *ngIf="selectedCategory() !== 'All' || searchQuery()">
+          <span class="filter-tag" *ngIf="selectedCategory() !== 'All'">
+            {{ selectedCategory() }}
+            <button (click)="selectedCategory.set('All')">&times;</button>
+          </span>
+          <span class="filter-tag" *ngIf="searchQuery()">
+            "{{ searchQuery() }}"
+            <button (click)="searchQuery.set('')">&times;</button>
+          </span>
+        </div>
+      </div>
+
+      <div class="loading-state" *ngIf="loading()">
+        <div class="spinner"></div>
+        <p>Loading products...</p>
+      </div>
+
+      <div class="error-state" *ngIf="error() && !loading()">
+        <p>{{ error() }}</p>
+        <button class="btn btn-outline" (click)="loadProducts()">Retry</button>
+      </div>
+
+      <div class="products-grid" *ngIf="!loading() && !error()">
+        <div class="product-card" *ngFor="let product of filteredProducts()">
+          <div class="card-media">
+            <img [src]="product.image" [alt]="product.name" class="product-img" />
+            <span class="badge-tag" *ngIf="product.badge">{{ product.badge }}</span>
+            <span class="condition-tag">{{ product.condition }}</span>
+          </div>
+          <div class="card-body">
+            <div class="card-meta-top">
+              <span class="product-category">{{ product.category }}</span>
+            </div>
+            <h3 class="product-name" [title]="product.name">{{ product.name }}</h3>
+            <p class="product-desc">{{ product.description }}</p>
+            <div class="price-row">
+              <span class="price-amount">{{ formatPrice(product.price) }}</span>
+              <span class="stock-info" [class.out]="product.stockQuantity <= 0">
+                {{ product.stockQuantity > 0 ? product.stockQuantity + ' in stock' : 'Out of stock' }}
+              </span>
+            </div>
+            <div class="seller-mini">
+              <div class="seller-avatar-mini">{{ product.seller.name.charAt(0) }}</div>
+              <span class="seller-name-mini">{{ product.seller.name }}</span>
+            </div>
+            <div class="card-actions">
+              <a [routerLink]="['/products', product.id]" class="btn btn-outline btn-sm">View Details</a>
+              <button class="btn btn-primary btn-sm" (click)="addToCart(product)" [disabled]="product.stockQuantity <= 0">
+                Add to Cart
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="empty-state" *ngIf="!loading() && !error() && filteredProducts().length === 0">
+        <div class="empty-icon-wrap">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </div>
+        <h3>No products found</h3>
+        <p>Try adjusting your filters or search terms.</p>
+        <button class="btn btn-primary" (click)="clearFilters()">Clear All Filters</button>
+      </div>
+    </main>
+  </div>
+</div>

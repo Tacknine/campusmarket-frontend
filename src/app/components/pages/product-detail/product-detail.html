@@ -1,0 +1,87 @@
+<app-navbar></app-navbar>
+<div class="product-detail-page">
+  <div class="section-container">
+    <div class="loading-state" *ngIf="loading()">
+      <div class="spinner"></div>
+      <p>Loading product...</p>
+    </div>
+
+    <div class="error-state" *ngIf="error() && !loading()">
+      <h2>Product Not Found</h2>
+      <p>{{ error() }}</p>
+      <button class="btn btn-primary" (click)="goBack()">Back to Products</button>
+    </div>
+
+    <ng-container *ngIf="product() && !loading()">
+      <div class="breadcrumb">
+        <a routerLink="/">Home</a>
+        <span class="sep">/</span>
+        <a routerLink="/products">Products</a>
+        <span class="sep">/</span>
+        <span>{{ product()!.name }}</span>
+      </div>
+
+      <div class="detail-grid">
+        <div class="product-image-section">
+          <div class="image-wrapper">
+            <img [src]="product()!.image" [alt]="product()!.name" class="main-image" />
+            <span class="condition-badge">{{ product()!.condition }}</span>
+            <span class="badge-overlay" *ngIf="product()!.badge">{{ product()!.badge }}</span>
+          </div>
+        </div>
+
+        <div class="product-info-section">
+          <span class="category-tag">{{ product()!.category }}</span>
+          <h1 class="product-title">{{ product()!.name }}</h1>
+
+          <div class="price-block">
+            <span class="price-main">{{ formatPrice(product()!.price) }}</span>
+          </div>
+
+          <div class="stock-status" [class.out]="product()!.stockQuantity <= 0">
+            <span class="stock-dot"></span>
+            {{ product()!.stockQuantity > 0 ? 'In Stock (' + product()!.stockQuantity + ' available)' : 'Out of Stock' }}
+          </div>
+
+          <div class="description-block">
+            <h3>Description</h3>
+            <p>{{ product()!.description }}</p>
+          </div>
+
+          <div class="quantity-section" *ngIf="product()!.stockQuantity > 0">
+            <h3>Quantity</h3>
+            <div class="qty-controls">
+              <button class="qty-btn" (click)="decrementQty()" [disabled]="quantity() <= 1">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              </button>
+              <span class="qty-value">{{ quantity() }}</span>
+              <button class="qty-btn" (click)="incrementQty()" [disabled]="quantity() >= product()!.stockQuantity">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="action-buttons" *ngIf="product()!.stockQuantity > 0">
+            <button class="btn btn-accent btn-lg" (click)="addToCart()">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="9" cy="21" r="1"></circle>
+                <circle cx="20" cy="21" r="1"></circle>
+                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+              </svg>
+              Add to Cart
+            </button>
+            <button class="btn btn-primary btn-lg" (click)="buyNow()">Buy Now</button>
+          </div>
+
+          <div class="seller-card">
+            <div class="seller-avatar-lg">{{ product()!.seller.name.charAt(0) }}</div>
+            <div class="seller-info">
+              <h4>{{ product()!.seller.name }}</h4>
+              <span>{{ product()!.seller.major }} &bull; {{ product()!.seller.university }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+</div>

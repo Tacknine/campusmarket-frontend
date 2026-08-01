@@ -1,0 +1,170 @@
+<div class="buyer-dashboard">
+  <div class="page-header">
+    <h1>Buyer Dashboard</h1>
+    <p>Products, Orders, Payments &amp; Tracking</p>
+  </div>
+
+  <div class="tab-bar">
+    <button class="tab-btn" [class.active]="activeTab() === 'products'" (click)="setTab('products')">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      Products
+    </button>
+    <button class="tab-btn" [class.active]="activeTab() === 'categories'" (click)="setTab('categories')">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+      Categories
+    </button>
+    <button class="tab-btn" [class.active]="activeTab() === 'orders'" (click)="setTab('orders')">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+      Orders
+    </button>
+    <button class="tab-btn" [class.active]="activeTab() === 'payments'" (click)="setTab('payments')">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+      Payments
+    </button>
+    <button class="tab-btn" [class.active]="activeTab() === 'tracking'" (click)="setTab('tracking')">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+      Tracking
+    </button>
+  </div>
+
+  <!-- Products Tab -->
+  <div class="tab-content" *ngIf="activeTab() === 'products'">
+    <div class="products-header">
+      <div class="search-bar">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <input type="text" placeholder="Search products..." [value]="searchQuery()" (input)="searchQuery.set($any($event.target).value)" />
+      </div>
+      <a routerLink="/products" class="btn btn-sm btn-outline">View All</a>
+    </div>
+
+    <div class="category-pills">
+      <button class="pill" [class.active]="selectedCategoryId() === null" (click)="selectCategory(null)">All</button>
+      <button class="pill" *ngFor="let cat of categories()" [class.active]="selectedCategoryId() === cat.name.toLowerCase()" (click)="selectCategory(cat.name.toLowerCase())">{{ cat.name }}</button>
+    </div>
+
+    <div class="product-grid">
+      <div class="product-card" *ngFor="let product of filteredProducts">
+        <div class="pc-img" style="background: linear-gradient(135deg, #991b1b, #7f1d1d)">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+        </div>
+        <div class="pc-body">
+          <span class="pc-name">{{ product.name }}</span>
+          <span class="pc-price">{{ formatPrice(product.price) }}</span>
+        </div>
+        <div class="pc-footer">
+          <a [routerLink]="['/products', product.id]" class="btn btn-sm btn-outline">View</a>
+          <a routerLink="/cart" class="btn btn-sm btn-primary">Buy</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="empty-state" *ngIf="filteredProducts.length === 0">
+      <h3>No products found</h3>
+      <p>Try a different search or category.</p>
+    </div>
+  </div>
+
+  <!-- Categories Tab -->
+  <div class="tab-content" *ngIf="activeTab() === 'categories'">
+    <div class="categories-grid">
+      <div class="category-card" *ngFor="let cat of categories()" (click)="selectCategory(cat.id); setTab('products')">
+        <div class="cat-icon" [style.background]="cat.gradient">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+        </div>
+        <span class="cat-name">{{ cat.name }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Orders Tab -->
+  <div class="tab-content" *ngIf="activeTab() === 'orders'">
+    <div class="stats-row">
+      <div class="stat-card"><span class="stat-value">{{ totalOrders }}</span><span class="stat-label">Total</span></div>
+      <div class="stat-card"><span class="stat-value pending">{{ pendingOrders }}</span><span class="stat-label">Active</span></div>
+      <div class="stat-card"><span class="stat-value">{{ formatPrice(totalSpent) }}</span><span class="stat-label">Spent</span></div>
+    </div>
+
+    <div class="empty-state" *ngIf="orders().length === 0">
+      <h3>No orders yet</h3>
+      <p>Browse products and place your first order!</p>
+      <button class="btn btn-primary" (click)="setTab('products')">Browse Products</button>
+    </div>
+
+    <div class="orders-list" *ngIf="orders().length > 0">
+      <div class="order-card" *ngFor="let order of orders()">
+        <div class="order-header">
+          <span class="order-id">#{{ order.id }}</span>
+          <span class="status-badge" [class]="getStatusColor(order.status)">{{ order.status }}</span>
+          <span class="order-date">{{ formatDate(order.createdAt) }}</span>
+        </div>
+        <div class="order-body">
+          <div class="ob-row"><span>Items:</span><span>{{ (order.items || []).length }} item(s)</span></div>
+          <div class="ob-row"><span>Total:</span><span class="price">{{ formatPrice(order.totalPrice) }}</span></div>
+          <div class="ob-row" *ngIf="order.deliveryAddress"><span>Delivery:</span><span class="muted">{{ order.deliveryAddress }}</span></div>
+        </div>
+        <div class="order-actions">
+          <button class="btn btn-sm btn-outline" [routerLink]="['/order-confirmation', order.id]">Details</button>
+          <button class="btn btn-sm btn-outline" (click)="loadTracking(order.id); setTab('tracking')">Track</button>
+          <button class="btn btn-sm btn-accent" *ngIf="canPayOrder(order)" (click)="payNow(order.id)">Pay Now</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Payments Tab -->
+  <div class="tab-content" *ngIf="activeTab() === 'payments'">
+    <div class="empty-state" *ngIf="payments().length === 0">
+      <h3>No payments yet</h3>
+      <p>Your payment history will appear here after you make a payment.</p>
+    </div>
+
+    <div class="payments-list" *ngIf="payments().length > 0">
+      <div class="payment-card" *ngFor="let pmt of payments()">
+        <div class="pmt-left">
+          <span class="pmt-method">{{ pmt.method }}</span>
+          <span class="pmt-amount">{{ formatPrice(pmt.amount) }}</span>
+        </div>
+        <div class="pmt-right">
+          <span class="status-badge" [class.success]="pmt.status === 'COMPLETED'" [class.warning]="pmt.status === 'PENDING'" [class.danger]="pmt.status === 'FAILED'">{{ pmt.status }}</span>
+          <span class="pmt-date">{{ formatDate(pmt.createdAt) }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tracking Tab -->
+  <div class="tab-content" *ngIf="activeTab() === 'tracking'">
+    <div class="empty-state" *ngIf="deliveries().length === 0 && orders().length === 0">
+      <h3>No tracking info</h3>
+      <p>Place an order and track its delivery here.</p>
+      <button class="btn btn-primary" (click)="setTab('products')">Browse Products</button>
+    </div>
+
+    <div class="empty-state" *ngIf="deliveries().length === 0 && orders().length > 0">
+      <h3>Select an order to track</h3>
+      <p>Go to your orders tab and click Track on any order.</p>
+      <button class="btn btn-outline" (click)="setTab('orders')">My Orders</button>
+    </div>
+
+    <div class="tracking-list" *ngIf="deliveries().length > 0">
+      <div class="tracking-card" *ngFor="let delivery of deliveries()">
+        <div class="tc-header">
+          <span class="tc-order">Order #{{ delivery.orderId }}</span>
+          <span class="status-badge" [class]="getStatusColor(delivery.status)">{{ delivery.status }}</span>
+        </div>
+        <div class="tc-body">
+          <div class="tc-row"><span>Driver:</span><span>{{ delivery.driverName || 'Assigning...' }}</span></div>
+          <div class="tc-row"><span>Phone:</span><span>{{ delivery.driverPhone || '-' }}</span></div>
+          <div class="tc-row"><span>Pickup:</span><span>{{ delivery.pickupAddress || '-' }}</span></div>
+          <div class="tc-row"><span>Delivery:</span><span>{{ delivery.deliveryAddress || '-' }}</span></div>
+          <div class="tc-row" *ngIf="delivery.currentLocationText"><span>Current:</span><span>{{ delivery.currentLocationText }}</span></div>
+          <div class="tc-row" *ngIf="delivery.eta"><span>ETA:</span><span class="eta">{{ delivery.eta }}</span></div>
+          <div class="tc-row" *ngIf="delivery.distanceRemaining"><span>Distance:</span><span>{{ delivery.distanceRemaining }}</span></div>
+        </div>
+        <div class="tc-footer" *ngIf="delivery.estimatedDeliveryTime">
+          <span>Est. Delivery: {{ formatDate(delivery.estimatedDeliveryTime) }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

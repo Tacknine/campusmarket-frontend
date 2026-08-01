@@ -1,0 +1,167 @@
+<div class="register-page-wrapper">
+  <div class="toast-wrapper" *ngIf="toast()" [class.show]="toast()" [class.error]="toast()?.type === 'error'">
+    <div class="toast-inner">
+      <svg *ngIf="toast()?.type === 'success'" class="toast-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+      </svg>
+      <svg *ngIf="toast()?.type === 'error'" class="toast-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      <span>{{ toast()?.text }}</span>
+    </div>
+  </div>
+
+  <div class="register-card-container">
+    <a routerLink="/" class="brand-logo-link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+        <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+      </svg>
+      <span class="brand-title">Campus<span class="highlight">Market</span></span>
+    </a>
+
+    <h1 class="register-heading">Create Your Account</h1>
+    <p class="register-subheading">Join a trusted network of student buyers and sellers.</p>
+
+    <!-- Role Selection -->
+    <div class="role-section">
+      <span class="role-section-label">I want to join as</span>
+      <div class="role-options">
+        <button type="button" class="role-option" [class.selected]="selectedRole() === 'BUYER'" (click)="selectRole('BUYER')">
+          <span class="role-name">Buyer</span>
+        </button>
+        <button type="button" class="role-option" [class.selected]="selectedRole() === 'SELLER'" (click)="selectRole('SELLER')">
+          <span class="role-name">Seller</span>
+        </button>
+        <button type="button" class="role-option" [class.selected]="selectedRole() === 'BOTH'" (click)="selectRole('BOTH')">
+          <span class="role-name">Buy &amp; Sell</span>
+        </button>
+      </div>
+    </div>
+
+    <form (submit)="$event.preventDefault(); onSubmit()" class="register-form">
+      <div class="form-field-group">
+        <label class="form-label" for="reg-fullname">Full Name</label>
+        <input
+          type="text"
+          id="reg-fullname"
+          class="form-input"
+          [class.invalid]="fullNameError()"
+          [value]="fullName()"
+          (input)="fullName.set($any($event.target).value)"
+          placeholder="Enter your full name"
+          required
+        />
+        <div class="validation-message" *ngIf="fullNameError()">{{ fullNameError() }}</div>
+      </div>
+
+      <div class="form-field-group">
+        <label class="form-label" for="reg-username">Username</label>
+        <input
+          type="text"
+          id="reg-username"
+          class="form-input"
+          [class.invalid]="usernameError()"
+          [value]="username()"
+          (input)="username.set($any($event.target).value)"
+          placeholder="Choose a username"
+          required
+        />
+        <div class="validation-message" *ngIf="usernameError()">{{ usernameError() }}</div>
+      </div>
+
+      <div class="form-field-group">
+        <label class="form-label" for="reg-email">Email Address</label>
+        <input
+          type="email"
+          id="reg-email"
+          class="form-input"
+          [class.invalid]="emailError()"
+          [value]="email()"
+          (input)="email.set($any($event.target).value)"
+          placeholder="you&#64;university.ac.tz"
+          required
+        />
+        <div class="validation-message" *ngIf="emailError()">{{ emailError() }}</div>
+      </div>
+
+      <div class="form-field-group">
+        <label class="form-label" for="reg-password">Password</label>
+        <div class="password-input-wrap">
+          <input
+            [type]="showPassword() ? 'text' : 'password'"
+            id="reg-password"
+            class="form-input"
+            [class.invalid]="passwordError()"
+            [value]="password()"
+            (input)="password.set($any($event.target).value)"
+            placeholder="At least 6 characters"
+            required
+          />
+          <button type="button" class="toggle-password-btn" (click)="togglePasswordVisibility()" title="Show or hide password">
+            <svg *ngIf="!showPassword()" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            <svg *ngIf="showPassword()" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+          </button>
+        </div>
+        <div class="strength-meter" *ngIf="password()">
+          <div class="strength-bar">
+            <span
+              *ngFor="let i of [1, 2, 3, 4]"
+              class="strength-seg"
+              [class.filled]="i <= passwordStrength().score"
+              [style.--seg-color]="passwordStrength().color"
+            ></span>
+          </div>
+          <span class="strength-label" [style.color]="passwordStrength().color">{{ passwordStrength().label }}</span>
+        </div>
+        <div class="validation-message" *ngIf="passwordError()">{{ passwordError() }}</div>
+      </div>
+
+      <div class="form-field-group">
+        <label class="form-label" for="reg-confirm">Confirm Password</label>
+        <div class="password-input-wrap">
+          <input
+            [type]="showConfirmPassword() ? 'text' : 'password'"
+            id="reg-confirm"
+            class="form-input"
+            [class.invalid]="confirmError()"
+            [value]="confirmPassword()"
+            (input)="confirmPassword.set($any($event.target).value)"
+            placeholder="Re-enter your password"
+            required
+          />
+          <button type="button" class="toggle-password-btn" (click)="toggleConfirmPasswordVisibility()" title="Show or hide password">
+            <svg *ngIf="!showConfirmPassword()" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            <svg *ngIf="showConfirmPassword()" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+          </button>
+        </div>
+        <div class="validation-message" *ngIf="confirmError()">{{ confirmError() }}</div>
+      </div>
+
+      <!-- Terms -->
+      <label class="terms-checkbox" [class.accepted]="acceptedTerms()">
+        <input type="checkbox" [checked]="acceptedTerms()" (change)="acceptedTerms.set($any($event.target).checked)" />
+        <span>I agree to the <a href="#" (click)="$event.preventDefault()">Terms of Service</a> and <a href="#" (click)="$event.preventDefault()">Privacy Policy</a>.</span>
+      </label>
+
+      <button type="submit" class="btn-register-submit" [disabled]="isLoading()">
+        <span class="spinner" *ngIf="isLoading()">
+          <svg class="animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+        </span>
+        <span *ngIf="!isLoading()">Create Account</span>
+        <span *ngIf="isLoading()">Creating Account...</span>
+      </button>
+
+      <p class="login-footer-text">
+        Already have an account?
+        <a routerLink="/login" class="login-link">Log In</a>
+      </p>
+    </form>
+  </div>
+</div>

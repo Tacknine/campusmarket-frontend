@@ -1,0 +1,112 @@
+<div class="login-page-wrapper">
+  <!-- Toast Notification -->
+  <div class="toast-wrapper" *ngIf="toast()" [class.show]="toast()" [class.error]="toast()?.type === 'error'">
+    <div class="toast-inner">
+      <svg *ngIf="toast()?.type === 'success'" class="toast-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+      </svg>
+      <svg *ngIf="toast()?.type === 'error'" class="toast-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      <span>{{ toast()?.text }}</span>
+    </div>
+  </div>
+
+  <!-- Centered Login Card -->
+  <div class="login-card-container">
+    <a href="#" (click)="$event.preventDefault(); navigateToHome()" class="brand-logo-link" title="Return to Home">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+        <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+      </svg>
+      <span class="brand-title">Campus<span class="highlight">Market</span></span>
+    </a>
+
+    <h1 class="login-heading">Log In</h1>
+    <p class="login-subheading">Enter your credentials to continue.</p>
+
+    <form (submit)="$event.preventDefault(); onSubmit()" class="login-form" novalidate>
+      <div class="form-field-group" [class.has-error]="usernameError()">
+        <label class="form-label" for="login-username">Username</label>
+        <input
+          type="text"
+          id="login-username"
+          class="form-input"
+          [value]="username()"
+          (input)="username.set($any($event.target).value)"
+          (blur)="onUsernameBlur()"
+          placeholder="Enter your username"
+          required
+        />
+        <div class="validation-message" *ngIf="usernameError()">{{ usernameError() }}</div>
+      </div>
+
+      <div class="form-field-group" [class.has-error]="passwordError()">
+        <label class="form-label" for="login-password">Password</label>
+        <div class="password-input-wrap">
+          <input
+            [type]="showPassword() ? 'text' : 'password'"
+            id="login-password"
+            class="form-input"
+            [value]="password()"
+            (input)="password.set($any($event.target).value)"
+            (blur)="onPasswordBlur()"
+            placeholder="Enter your password"
+            required
+          />
+          <button
+            type="button"
+            class="toggle-password-btn"
+            (click)="togglePasswordVisibility()"
+            [title]="showPassword() ? 'Hide password' : 'Show password'"
+          >
+            <svg *ngIf="!showPassword()" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+            <svg *ngIf="showPassword()" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+              <line x1="1" y1="1" x2="23" y2="23"></line>
+            </svg>
+          </button>
+        </div>
+        <div class="validation-message" *ngIf="passwordError()">{{ passwordError() }}</div>
+      </div>
+
+      <div class="options-row">
+        <label class="remember-checkbox-label" (click)="toggleRememberMe()">
+          <input type="checkbox" [checked]="rememberMe()" class="custom-checkbox" />
+          <span>Remember me</span>
+        </label>
+
+        <a href="#" (click)="$event.preventDefault(); onForgotPassword()" class="forgot-link">
+          Forgot Password?
+        </a>
+      </div>
+
+      <button
+        type="submit"
+        class="btn-login-submit"
+        [disabled]="isLoading()"
+        [class.loading]="isLoading()"
+      >
+        <span class="spinner" *ngIf="isLoading()">
+          <svg class="animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+        </span>
+        <span *ngIf="!isLoading()">Log In</span>
+        <span *ngIf="isLoading()">Authenticating...</span>
+      </button>
+
+      <p class="register-footer-text">
+        Don't have an account?
+        <a routerLink="/register" class="register-link">Register Now</a>
+      </p>
+    </form>
+  </div>
+</div>

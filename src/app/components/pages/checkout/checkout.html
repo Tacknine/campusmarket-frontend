@@ -1,0 +1,271 @@
+<app-navbar></app-navbar>
+<div class="checkout-page">
+  <div class="section-container">
+    <h1 class="page-title">{{ isPayMode() ? 'Complete Payment' : 'Checkout' }}</h1>
+
+    <div class="progress-stepper">
+      <div class="step" [class.active]="step() >= 1" [class.done]="step() > 1">
+        <div class="step-circle" [class.check]="step() > 1">
+          <span *ngIf="step() <= 1">1</span>
+          <svg *ngIf="step() > 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        </div>
+        <span class="step-label">Delivery</span>
+      </div>
+      <div class="step-line" [class.done]="step() > 1"></div>
+      <div class="step" [class.active]="step() >= 2" [class.done]="step() > 2">
+        <div class="step-circle" [class.check]="step() > 2">
+          <span *ngIf="step() <= 2">2</span>
+          <svg *ngIf="step() > 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        </div>
+        <span class="step-label">Review</span>
+      </div>
+      <div class="step-line" [class.done]="step() > 3"></div>
+      <div class="step" [class.active]="step() >= 3">
+        <div class="step-circle">
+          <span>3</span>
+        </div>
+        <span class="step-label">Payment</span>
+      </div>
+    </div>
+
+    <div class="checkout-layout">
+      <div class="checkout-form-section">
+        <!-- STEP 1: Delivery -->
+        <div class="form-card" *ngIf="step() === 1">
+          <h2>Delivery Information</h2>
+          <p class="form-desc">Tell us where and when to deliver your items.</p>
+
+          <div class="form-group">
+            <label>Delivery Address</label>
+            <textarea [(ngModel)]="deliveryAddress" placeholder="e.g. UDSM Mlimani Campus, Hall B Room 12, Dar es Salaam" rows="3" required></textarea>
+          </div>
+          <div class="form-group">
+            <label>Contact Phone</label>
+            <input type="tel" [(ngModel)]="contactPhone" placeholder="e.g. +254 712 345 678" required />
+          </div>
+          <div class="form-actions">
+            <a routerLink="/cart" class="btn btn-outline">Back to Cart</a>
+            <button class="btn btn-primary" (click)="nextStep()">Continue to Review</button>
+          </div>
+        </div>
+
+        <!-- STEP 2: Review -->
+        <div class="form-card" *ngIf="step() === 2">
+          <h2>Review Your Order</h2>
+          <p class="form-desc">Please verify all details before placing your order.</p>
+
+          <div class="review-section">
+            <h3>Delivery Details</h3>
+            <div class="review-field">
+              <span class="review-label">Address:</span>
+              <span>{{ deliveryAddress }}</span>
+            </div>
+            <div class="review-field">
+              <span class="review-label">Phone:</span>
+              <span>{{ contactPhone }}</span>
+            </div>
+          </div>
+
+          <div class="review-section">
+            <h3>Order Items</h3>
+            <div class="review-item" *ngFor="let item of getOrderItems()">
+              <span class="review-item-name">{{ item.productName }} &times; {{ item.quantity }}</span>
+              <span class="review-item-price">{{ formatPrice(item.price * item.quantity) }}</span>
+            </div>
+          </div>
+
+          <div class="error-msg" *ngIf="error()">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            {{ error() }}
+          </div>
+
+          <div class="form-actions">
+            <button class="btn btn-outline" (click)="goBack()">Back</button>
+            <button class="btn btn-accent" (click)="placeOrder()" [disabled]="submitting()">
+              {{ submitting() ? 'Placing Order...' : 'Place Order' }}
+            </button>
+          </div>
+        </div>
+
+        <!-- STEP 3: Payment -->
+        <div class="form-card payment-card" *ngIf="step() === 3">
+          <div class="order-loading" *ngIf="loadingOrder()">
+            <div class="spinner"></div>
+            <p>Loading order details...</p>
+          </div>
+          <ng-container *ngIf="!loadingOrder()">
+          <ng-container *ngIf="canProceedToPayment()">
+          <h2>Select Payment Method</h2>
+          <p class="form-desc">Choose how you'd like to pay for your order.</p>
+
+          <!-- Order Summary -->
+          <div class="order-summary-payment">
+            <div class="summary-header">
+              <span>Order #{{ createdOrderId() }}</span>
+              <span class="status-badge">CREATED</span>
+            </div>
+            <div class="summary-total-large">
+              <span>Total Amount:</span>
+              <strong>{{ formatPrice(getOrderTotal()) }}</strong>
+            </div>
+            <div class="summary-items-preview">
+              <div class="preview-item" *ngFor="let item of getOrderItems()">
+                <span>{{ item.productName }} x{{ item.quantity }}</span>
+                <span>{{ formatPrice(item.price * item.quantity) }}</span>
+              </div>
+            </div>
+            <div class="summary-divider"></div>
+            <div class="summary-details">
+              <div class="detail-row">
+                <span>Delivery:</span>
+                <span>{{ deliveryAddress }}</span>
+              </div>
+              <div class="detail-row">
+                <span>Phone:</span>
+                <span>{{ contactPhone }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="payment-options">
+            <!-- M-Pesa (Safaricom) -->
+            <div class="payment-option" [class.selected]="paymentMethod() === 'MPESA'" (click)="selectPayment('MPESA')">
+              <div class="payment-radio">
+                <div class="radio-dot" *ngIf="paymentMethod() === 'MPESA'"></div>
+              </div>
+              <div class="payment-info">
+                <div class="payment-icon mpesa-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"></path><path d="M9 12l2 2 4-4"></path></svg>
+                </div>
+                <div>
+                  <strong>M-Pesa by Safaricom</strong>
+                  <p>Instant mobile money — pay via STK push on your phone</p>
+                </div>
+                <span class="powered-badge">Powered by Safaricom</span>
+              </div>
+            </div>
+
+            <!-- Cash on Delivery -->
+            <div class="payment-option" [class.selected]="paymentMethod() === 'CASH'" (click)="selectPayment('CASH')">
+              <div class="payment-radio">
+                <div class="radio-dot" *ngIf="paymentMethod() === 'CASH'"></div>
+              </div>
+              <div class="payment-info">
+                <div class="payment-icon cash-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"></rect><circle cx="12" cy="12" r="3"></circle><line x1="2" y1="9" x2="6" y2="9"></line><line x1="2" y1="15" x2="6" y2="15"></line><line x1="18" y1="9" x2="22" y2="9"></line><line x1="18" y1="15" x2="22" y2="15"></line></svg>
+                </div>
+                <div>
+                  <strong>Cash on Delivery</strong>
+                  <p>Pay with cash when your order arrives</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- M-Pesa Phone Number -->
+          <div class="mpesa-phone-field" *ngIf="paymentMethod() === 'MPESA'">
+            <label for="mpesaPhone">M-Pesa Phone Number</label>
+            <div class="phone-input-row">
+              <div class="country-select">
+                <select [value]="selectedCountry().code" (change)="selectCountry(countries[$any($event.target).selectedIndex])" aria-label="Country code">
+                  <option *ngFor="let c of countries" [value]="c.code">{{ c.flag }} {{ c.dial }}</option>
+                </select>
+              </div>
+              <input
+                id="mpesaPhone"
+                type="tel"
+                [(ngModel)]="mpesaPhoneNumber"
+                [placeholder]="'e.g. ' + selectedCountry().dial + ' ' + selectedCountry().mobilePrefix + '12345678'"
+                required
+              />
+            </div>
+            <small>Enter the mobile number registered with M-Pesa. We'll send a payment prompt (STK push) to this number.</small>
+
+            <div class="mpesa-status">
+              <div class="status-info">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+                <span>How it works: tap <strong>Confirm Payment</strong>, approve the prompt on your phone, and we'll complete your order instantly.</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="error-msg" *ngIf="error()">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            {{ error() }}
+          </div>
+
+          <div class="form-actions">
+            <button class="btn btn-outline" (click)="skipPayment()">{{ isPayMode() ? 'Back to Order' : 'Pay Later' }}</button>
+            <button class="btn btn-accent" (click)="confirmPayment()"
+              [disabled]="!paymentMethod() || paying() || (paymentMethod() === 'MPESA' && !mpesaPhoneNumber)">
+              <span class="cm-spinner" *ngIf="paying()"></span>
+              <span *ngIf="!paying()">Confirm Payment</span>
+              <span *ngIf="paying()">Contacting Safaricom...</span>
+            </button>
+          </div>
+
+          <div class="secure-payment-note">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              <path d="M9 12l2 2 4-4"></path>
+            </svg>
+            <span>Payments are encrypted and processed securely through the Safaricom Daraja gateway.</span>
+          </div>
+          </ng-container>
+
+          <!-- WAITING FOR SELLER ACCEPTANCE -->
+          <div class="waiting-card" *ngIf="!canProceedToPayment()">
+            <div class="waiting-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+            </div>
+            <h2>Waiting for Seller Confirmation</h2>
+            <p class="waiting-desc">
+              Your order <strong>#{{ createdOrderId() }}</strong> has been placed.
+              The seller needs to <strong>confirm your order</strong> before you can proceed with payment.
+            </p>
+            <div class="waiting-progress">
+              <span class="cm-spinner"></span>
+              <span>Checking for seller confirmation... This page updates automatically.</span>
+            </div>
+            <div class="waiting-actions">
+              <button class="btn btn-outline" (click)="checkOrderStatus()">Check Status</button>
+              <button class="btn btn-outline" (click)="skipPayment()">{{ isPayMode() ? 'Back to Orders' : 'View Order' }}</button>
+            </div>
+          </div>
+          </ng-container>
+        </div>
+      </div>
+
+      <!-- Order Summary Sidebar -->
+      <div class="order-summary-card">
+        <h3>Order Summary</h3>
+        <div class="summary-items" *ngIf="hasOrderData()">
+          <div class="summary-item" *ngFor="let item of getOrderItems()">
+            <span class="summary-item-name">{{ item.productName }}</span>
+            <span class="summary-item-qty">x{{ item.quantity }}</span>
+            <span class="summary-item-price">{{ formatPrice(item.price * item.quantity) }}</span>
+          </div>
+        </div>
+        <div class="summary-divider"></div>
+        <div class="summary-total">
+          <span>Total</span>
+          <span>{{ formatPrice(getOrderTotal()) }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
